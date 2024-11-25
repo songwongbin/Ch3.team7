@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Accounts {
+  accountId   Int      @id @default(autoincrement()) @map("accountId")
+  loginId     String   @unique @map("loginId")
+  password  String   @map("password")
+  name         String   @map("name")
+  createdAt    DateTime @default(now()) @map("createdAt")
+  updatedAt    DateTime @updatedAt @map("updatedAt")
+
+  Characters     Characters[]
+  CharacterInventorys     CharacterInventorys[]
+  CharacterItems     CharacterItems[]
+  Items    Items[]
+  @@map("Accounts")
+}
+
+
+model Items  {
+  itemId   Int @id @default(autoincrement()) @map("itemId")
+  accountId Int  @map("accountId")
+  name String @map("name")
+  price Int  @map("price")
+  characterInventoryId  Int? @map("characterInventoryId")
+  characterItemId Int? @map("characterItemId")
+  createdAt    DateTime @default(now()) @map("createdAt")
+  updatedAt    DateTime @updatedAt @map("updatedAt")
+
+  account     Accounts      @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+  characterInventorys CharacterInventorys? @relation(fields: [characterInventoryId], references: [characterInventoryId], onDelete: Cascade)
+  characterItems  CharacterItems? @relation(fields: [characterItemId], references: [characterItemId], onDelete: Cascade)
+  AddAbilities AddAbilities?
+  @@map("Items")
+}
+
+model AddAbilities {
+itemId Int  @unique  @map("itemId")
+hp Int? @map("hp")
+str Int? @map("str")
+createdAt    DateTime @default(now()) @map("createdAt")
+updatedAt    DateTime @updatedAt @map("updatedAt")
+items     Items      @relation(fields: [itemId], references: [itemId], onDelete: Cascade)
+@@map("AddAbilities")
+}
+
+
+model Characters{
+  characterId   Int @id @default(autoincrement()) @map("characterId")
+  accountId Int  @map("accountId")
+  name         String   @map("name")
+  money   Int @default(10000) @map("money")
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  account     Accounts      @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+  Stats Stats?
+  CharacterInventorys CharacterInventorys?
+  CharacterItems CharacterItems?
+  @@map("Characters")
+}
+
+model Stats {
+characterId Int  @unique  @map("characterId")
+hp Int @default(500) @map("hp") 
+str Int @default(100) @map("str")
+createdAt    DateTime @default(now()) @map("createdAt")
+updatedAt    DateTime @updatedAt @map("updatedAt")
+
+characters Characters @relation(fields: [characterId], references: [characterId], onDelete: Cascade)
+@@map("Stats")
+}
+
+
+model CharacterInventorys {
+  characterInventoryId Int @id @default(autoincrement()) @map("characterInventoryId")
+  characterId Int  @unique  @map("characterId")
+  accountId Int  @map("accountId")
+  createdAt    DateTime @default(now()) @map("createdAt")
+  updatedAt    DateTime @updatedAt @map("updatedAt")
+
+  Items Items[]
+  characters Characters @relation(fields: [characterId], references: [characterId], onDelete: Cascade)
+  account     Accounts      @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+  @@map("CharacterInventorys")
+}
+
+
+model CharacterItems {
+  characterItemId Int @id @default(autoincrement()) @map("characterItemId")
+  characterId Int  @unique  @map("characterId")
+  accountId Int  @map("accountId")
+  createdAt    DateTime @default(now()) @map("createdAt")
+  updatedAt    DateTime @updatedAt @map("updatedAt")
+
+  Items Items[]
+  characters Characters @relation(fields: [characterId], references: [characterId], onDelete: Cascade)
+  account     Accounts      @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+  @@map("CharacterItems")
+}
